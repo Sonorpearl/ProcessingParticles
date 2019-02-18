@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import Processing.QuadTree;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PVector;
@@ -12,13 +13,15 @@ public class ParticleSystem
 {
 	public static PApplet parent;
 
-	private int particleCount = 100;
+	private int particleCount = 50;
 	private Particle[] particles;
+	private QuadTree quadTree;
 
 	private ParticleEffector attractor;
 	private ParticleEffector torus;
 	private ParticleEffector friction;
 	private ParticleEffector tracer;
+	private ParticleEffector reflector;
 
 	private List<ParticleEffector> effectors;
 
@@ -27,6 +30,7 @@ public class ParticleSystem
 	public ParticleSystem(PApplet _parent)
 	{
 		parent = _parent;
+		quadTree = new QuadTree(this, 0, 0, parent.width, parent.height);
 
 		particles = new Particle[particleCount];
 		CreateEffectors();
@@ -37,10 +41,21 @@ public class ParticleSystem
 	{
 		parent = _parent;
 		particleCount = _particleCount;
+		quadTree = new QuadTree(this, 0, 0, parent.width, parent.height);
 
 		particles = new Particle[particleCount];
 		CreateEffectors();
 		CreateParticles();
+	}
+	
+	public int GetCount()
+	{
+		return particles.length;
+	}
+	
+	public PVector GetPos(int _id)
+	{
+		return particles[_id].getPos();
 	}
 
 	public void CreateEffectors()
@@ -65,6 +80,7 @@ public class ParticleSystem
 		SetupTorus();
 		SetupFriction();
 		SetupTracer();
+		SetupReflector();
 
 		/*
 		 * myParticle = new Particle( parent, this, new
@@ -96,6 +112,13 @@ public class ParticleSystem
 		tracer = new Tracer(new PVector(0, 0, 0), 1f);
 		AddEffector(tracer);
 	}
+	
+	public void SetupReflector()
+	{
+		//reflector = new Reflector(new PVector(0, 0, 0), 1f);
+		reflector = new Reflector(new PVector(0, 0, 0), 1f, 20f);
+		AddEffector(reflector);
+	}
 
 	public void Draw()
 	{
@@ -118,7 +141,14 @@ public class ParticleSystem
 		{
 			particles[i].Display();
 		}
-		((Tracer) tracer).Display(particles);
+		if(tracer != null)
+		{
+			((Tracer) tracer).Display(particles);
+		}
+		
+		quadTree.Init();
+		quadTree.Display();
+		quadTree.Reset();
 	}
 
 	public void Update()

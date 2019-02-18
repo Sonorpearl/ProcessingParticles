@@ -71,7 +71,6 @@ public class Particle
 	
 	public void Display()
 	{
-		
 		parent.stroke(0, 0, 100);
 		parent.strokeWeight(size * PApplet.map(pos.z, -1000, 1000, 1, 20));
 		parent.point(pos.x, pos.y);
